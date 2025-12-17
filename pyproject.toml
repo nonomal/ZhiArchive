@@ -1,0 +1,53 @@
+[project]
+name = "zhi-archive"
+dynamic = ["version"]
+description = "Collecting and storing dynamic content from your Zhihu account for never lose."
+authors = [
+    { name = "amchii", email = "finethankuandyou@gmail.com" }
+]
+license = "BSD-3-Clause"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only"
+]
+dependencies = [
+    "playwright",
+    "pydantic-settings",
+    "fastapi",
+    "uvicorn[standard]",
+    "cryptography",
+    "PyJWT",
+    "jinja2",
+    "aiofiles",
+    "redis",
+    "pathvalidate",
+    "playwright_stealth",
+]
+
+[project.urls]
+Homepage = "https://github.com/amchii/ZhiArchive"
+Repository = "https://github.com/amchii/ZhiArchive"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+extend-select = [
+    "I", # isort
+    "B", # flake8-bugbear
+    "W", # pycodestyle
+    "C4", # flake8-comprehensions
+]
+ignore = [
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
+    "W191", # indentation contains tabs
+    "B019", # Use of `functools.lru_cache` or `functools.cache` on methods can lead to memory leaks
+    "B904"  # raise without from inside except
+]
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"

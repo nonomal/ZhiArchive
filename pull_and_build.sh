@@ -2,4 +2,4 @@
 set -e
 
 git pull
-docker build -t zhi-archive:latest -f BaseDockerfile .
+docker build -t zhi-archive:latest -f Base.Dockerfile .

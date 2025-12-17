@@ -86,7 +86,7 @@ cd ZhiArhive
 #### 构建镜像
 
 ```sh
-docker build -t zhi-archive:latest -f BaseDockerfile .
+docker build -t zhi-archive:latest -f Base.Dockerfile .
 ```
 
 这会拉取zhi-archive(playwright)的镜像，注意你的网络环境。

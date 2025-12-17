@@ -1,4 +1,0 @@
-FROM amchii/zhi-archive:v1.37.0-jammy
-
-COPY ./requirements.txt /root/requirements.txt
-RUN pip install -r /root/requirements.txt

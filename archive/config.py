@@ -1,8 +1,9 @@
 import pathlib
 from enum import Enum
+from typing import Annotated
 
-from pydantic import constr
-from pydantic_settings import BaseSettings
+from pydantic import StringConstraints
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class default:  # noqa
@@ -20,10 +21,14 @@ class Browser(str, Enum):
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     debug: bool = False
     secret_key: str = "unsafe secret key"  # 请生成一个随机字符串
     root_dir: pathlib.Path = pathlib.Path(__file__).resolve().parent.parent
-    results_dir: pathlib.Path = root_dir.joinpath("results")  # 结果存储目录，默认为：项目目录/results
+    results_dir: pathlib.Path = root_dir.joinpath(
+        "results"
+    )  # 结果存储目录，默认为：项目目录/results
     states_dir: pathlib.Path = root_dir.joinpath(
         "states"
     )  # 浏览器上下文state目录，默认为：项目目录/states
@@ -39,15 +44,17 @@ class Settings(BaseSettings):
     archiver_headless: bool = True
     monitor_headless: bool = True
     login_worker_headless: bool = True
-    log_level: constr(to_upper=True) = "INFO"
+    log_level: Annotated[
+        str,
+        StringConstraints(to_upper=True),
+    ] = "INFO"
     log_dir: pathlib.Path = root_dir.joinpath("logs")
     browser: Browser = Browser.CHROMIUM
     monitor_fetch_until: int = 1  # days，Monitor运行时默认抓取到1天前的动态
     monitor_interval: int = 60 * 5  # seconds，Monitor默认每5分钟检查一次新的动态
-    screenshot_max_page_scroll_height: int = 0  # 截图允许的页面的最大高度，像素值。0表示不限制
-
-    class Config:
-        env_file = ".env"
+    screenshot_max_page_scroll_height: int = (
+        0  # 截图允许的页面的最大高度，像素值。0表示不限制
+    )
 
     @property
     def redis_url(self):
