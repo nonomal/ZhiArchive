@@ -3,7 +3,8 @@ import json
 import pathlib
 from datetime import datetime, timedelta
 
-from playwright.async_api import Locator, Page, TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import Locator, Page
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 
 from archive.config import default, settings
 from archive.core.base import (
@@ -110,7 +111,9 @@ class Monitor(BaseWorker):
                 self.latest_dt = acted_at
             # 动态时间（e.g. 2023-12-25 16:58)只精确到秒，如果停止时间的那秒有多条动态，则会遗漏
             if acted_at <= until:
-                self.logger.info(f"当前动态时间：{acted_at} 早于停止时间：{until}, 将停止本次抓取")
+                self.logger.info(
+                    f"当前动态时间：{acted_at} 早于停止时间：{until}, 将停止本次抓取"
+                )
                 break
             action_text, target_type_text = action_texts.split("了")
             target_type = get_correct_target_type(action_text, target_type_text)
@@ -152,19 +155,24 @@ class Monitor(BaseWorker):
             start += count
             items.extend(_items)
             if cur_acted_at <= until:
-                self.logger.info(f"本次抓取最早动态时间：{cur_acted_at} 早于停止时间：{until}, 将停止")
+                self.logger.info(
+                    f"本次抓取最早动态时间：{cur_acted_at} 早于停止时间：{until}, 将停止"
+                )
                 break
-            self.logger.info("Press End.")
+            self.logger.info("按`End`以触发加载更多")
             await page.keyboard.press("End")
             try:
-                await page.locator(settings.activity_item_selector).nth(start).locator(
-                    "div.ContentItem"
-                ).wait_for(
-                    timeout=5 * 1000,
+                await (
+                    page.locator(settings.activity_item_selector)
+                    .nth(start)
+                    .locator("div.ContentItem")
+                    .wait_for(
+                        timeout=5 * 1000,
+                    )
                 )
-                self.logger.info("Load success")
+                self.logger.info("加载成功")
             except PlaywrightTimeoutError as e:
-                self.logger.info("Done, due to timeout")
+                self.logger.info("结束，页面超时")
                 self.logger.exception(e)
                 await page.screenshot(
                     path=self.results_dir.joinpath(
@@ -202,6 +210,7 @@ class Monitor(BaseWorker):
             page = await self.new_page(context)
             page.set_default_timeout(self.page_default_timeout)
             await self.goto(page, self.person_page_url)
+            await asyncio.sleep(1)
             results = await self.fetch(self.fetch_until, page)
             await self.save_and_push(results)
             self.logger.info("Done, wait for next fetch loop")

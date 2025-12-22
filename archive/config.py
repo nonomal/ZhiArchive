@@ -9,7 +9,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class default:  # noqa
     person_page_url = "https://www.zhihu.com/people/{people}"
 
-    activity_item_selector = "div.Profile-main div[role=list] div.List-item"
+    activity_item_selector = "div.Profile-main div.List-item"
     target_selector = "div.ContentItem"
     target_link_selector = "div.ContentItem h2 a[target=_blank]"
     state_file = "zhihu.state.json"
