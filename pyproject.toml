@@ -23,7 +23,7 @@ dependencies = [
     "aiofiles",
     "redis",
     "pathvalidate",
-    "playwright_stealth",
+    "playwright_stealth>=2.0.0",
 ]
 
 [project.urls]

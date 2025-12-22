@@ -19,13 +19,13 @@ from playwright.async_api import (
     Route,
     async_playwright,
 )
+from playwright_stealth import Stealth
 from redis import asyncio as aioredis
 
 from archive.config import default, settings
 from archive.env import user_agent
 from archive.utils.common import dt_str
 from archive.utils.encoder import JSONEncoder
-from archive.utils.stealth import stealth_async
 
 
 class AbnormalError(Exception):
@@ -91,7 +91,6 @@ def abort_with(error_code: str = None):
 
 async def init_context(context: BrowserContext):
     context.set_default_timeout(settings.context_default_timeout)
-    await stealth_async(context)
     return context
 
 
@@ -484,7 +483,7 @@ class BaseWorker:
         self.logger.info(f"{self.name} started.")
         await self.configurator.load_to_worker()
         while True:
-            async with async_playwright() as playwright:
+            async with Stealth().use_async(async_playwright()) as playwright:
                 async with self.rotate():
                     try:
                         self.logger.debug(f"{self.name}: New loop")

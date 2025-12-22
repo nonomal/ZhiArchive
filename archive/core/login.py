@@ -8,9 +8,12 @@ from playwright.async_api import (
     Browser,
     Page,
     Playwright,
-    TimeoutError as PlaywrightTimeoutError,
     async_playwright,
 )
+from playwright.async_api import (
+    TimeoutError as PlaywrightTimeoutError,
+)
+from playwright_stealth import Stealth
 from redis import asyncio as aioredis
 
 from archive.config import settings
@@ -149,7 +152,7 @@ class ZhiLogin(Base):
 
     async def run(self):
         logger.info("Start login worker.")
-        async with async_playwright() as playwright:
+        async with Stealth().use_async(async_playwright()) as playwright:
             while True:
                 try:
                     if qrcode_task := await self.get_new_req():

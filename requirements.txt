@@ -16,7 +16,7 @@ click==8.3.1
     # via uvicorn
 cryptography==46.0.3
     # via zhi-archive (pyproject.toml)
-fastapi==0.125.0
+fastapi==0.127.0
     # via zhi-archive (pyproject.toml)
 greenlet==3.3.0
     # via playwright
@@ -75,7 +75,7 @@ typing-inspection==0.4.2
     # via
     #   pydantic
     #   pydantic-settings
-uvicorn==0.38.0
+uvicorn==0.40.0
     # via zhi-archive (pyproject.toml)
 uvloop==0.22.1
     # via uvicorn
