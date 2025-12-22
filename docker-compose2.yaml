@@ -1,3 +1,4 @@
+# volumes 配置直接覆盖了Dockerfile中的`/opt/zhi_archive`，注意你当前的用户权限
 services:
   api:
     image: zhi-archive:latest
@@ -12,6 +13,7 @@ services:
   all_workers:
     image: zhi-archive:latest
     init: true
+    ipc: host
     working_dir: /opt/zhi_archive
     command: python run_all_workers_in_one.py
     volumes:

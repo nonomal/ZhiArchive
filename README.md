@@ -86,7 +86,7 @@ cd ZhiArhive
 #### 构建镜像
 
 ```sh
-docker build -t zhi-archive:latest -f Base.Dockerfile .
+docker build -t zhi-archive:latest -f CN.Dockerfile .
 ```
 
 这会拉取zhi-archive(playwright)的镜像，注意你的网络环境。
@@ -118,9 +118,12 @@ password=
 
 #### 启动
 
-*docker 新版本可以直接使用`docker compose`替换`docker-compose`*
+##### 警告⚠️
+若当前是root用户，则会导致容器内的chromium浏览器无法开启沙盒模式：[https://playwright.dev/python/docs/docker#run-the-image](https://playwright.dev/python/docs/docker#run-the-image)
 
 ##### 常规方式
+
+*docker 新版本可以直接使用`docker compose`替换`docker-compose`*
 
 ```
 docker-compose up -d
