@@ -22,5 +22,9 @@ def login(username: str = Body(), password: str = Body()):
 def login_view(request: Request):
     return templates.TemplateResponse(
         "login.html",
-        context={"request": request, "login_url": request.url_for("login")},
+        context={
+            "request": request,
+            "login_url": request.url_for("login"),
+            "redirect_url": request.url_for("zhi:config_view"),
+        },
     )

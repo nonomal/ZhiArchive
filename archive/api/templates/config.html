@@ -1,59 +1,355 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>配置与状态控制</title>
+    <title>ZhiArchive 配置控制台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        textarea {
-            width: 90%;
-            height: 150px;
-            margin-bottom: 10px;
+        :root {
+            --bg: #0c1220;
+            --panel: rgba(17, 24, 39, 0.82);
+            --card: rgba(23, 32, 49, 0.9);
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #2dd4bf;
+            --accent-strong: #14b8a6;
+            --text: #e8edf7;
+            --muted: #94a3b8;
+            --danger: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Manrope", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(45, 212, 191, 0.08), transparent 35%),
+            radial-gradient(circle at 80% 0%, rgba(125, 211, 252, 0.08), transparent 30%),
+            linear-gradient(135deg, #0b1220 0%, #0e172a 60%, #0c1220 100%);
+            color: var(--text);
+            padding: 32px 18px 40px;
+        }
+
+        .page {
+            width: min(1220px, 100%);
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px 20px;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .title h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 0.4px;
+        }
+
+        .title p {
+            margin: 6px 0 0;
+            color: var(--muted);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.03);
+            font-size: 13px;
+            letter-spacing: 0.2px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 1080px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            color: var(--muted);
+            letter-spacing: 0.35em;
+            font-size: 11px;
+            margin: 0 0 6px;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            display: inline-block;
         }
 
         input[type=text] {
-            width: 90%;
-            padding: 5px;
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            font-size: 15px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
 
-        .config-section {
-            margin-bottom: 20px;
+        input[type=text]:focus {
+            outline: none;
+            border-color: rgba(45, 212, 191, 0.6);
+            box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.08);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        textarea {
+            width: 100%;
+            height: 190px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 12px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+            line-height: 1.5;
+            resize: vertical;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: rgba(45, 212, 191, 0.6);
+            box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        textarea[readonly] {
+            opacity: 0.8;
+        }
+
+        .inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 11px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+            color: #031014;
+            font-weight: 700;
+            box-shadow: 0 10px 28px rgba(45, 212, 191, 0.25);
+        }
+
+        button.ghost {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .status-row strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+
+        .badge-success {
+            background: rgba(45, 212, 191, 0.12);
+            border: 1px solid rgba(45, 212, 191, 0.4);
+            color: var(--accent);
+        }
+
+        .badge-warning {
+            background: rgba(248, 113, 113, 0.14);
+            border: 1px solid rgba(248, 113, 113, 0.45);
+            color: #fecdd3;
         }
     </style>
 </head>
 <body>
-<div class="config-section">
-    <h2>知乎Cookies路径</h2>
-    <input type="text" id="statePath">
-    <button onclick="submitStatePath()">修改</button>
-</div>
-<div class="config-section">
-    <h2>归档Archiver配置</h2>
-    <h4><label for="archiverConfigReadOnly">只读：</label></h4>
-    <textarea id="archiverConfigReadOnly" readonly></textarea>
-    <h4><label for="archiverConfig">可配置：</label></h4>
-    <textarea id="archiverConfig"></textarea>
-    <button onclick="submitJSONUpdate('archiver')">提交</button>
-</div>
+<div class="page">
+    <header>
+        <div class="title">
+            <p class="eyebrow">Console</p>
+            <h1>配置与运行控制</h1>
+            <p>管理知乎 Cookies 路径、Archiver/Monitor 配置以及运行状态。</p>
+        </div>
+        <div class="header-actions">
+            <div class="pill">实时 API 更新</div>
+            <button class="primary" type="button"
+                    onclick="window.location.href='{{ zhi_login_url | default('/zhi/login') }}'">去登录知乎
+            </button>
+        </div>
+    </header>
 
-<div class="config-section">
-    <h2>监控Monitor配置</h2>
-    <h4><label for="monitorConfigReadOnly">只读：</label></h4>
-    <textarea id="monitorConfigReadOnly" readonly></textarea>
-    <h4><label for="monitorConfig">可配置：</label></h4>
-    <textarea id="monitorConfig"></textarea>
-    <button onclick="submitJSONUpdate('monitor')">提交</button>
-</div>
+    <div class="grid">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <p class="eyebrow">Core</p>
+                    <h2>知乎 Cookies 路径</h2>
+                </div>
+                <div class="pill">路径配置</div>
+            </div>
+            <div class="inputs">
+                <label for="statePath">文件路径</label>
+                <input type="text" id="statePath" placeholder="请输入 cookies.json 路径">
+            </div>
+            <div class="actions">
+                <button class="ghost" id="statePathRefresh" type="button">刷新</button>
+                <button class="primary" id="statePathSave" type="button">保存</button>
+            </div>
+        </div>
 
-<div class="config-section">
-    <h2>Archiver状态（暂停/运行）</h2>
-    <div id="archiverPause"></div>
-    <button onclick="togglePause('archiver')">切换状态</button>
-</div>
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <p class="eyebrow">Runtime</p>
+                    <h2>运行状态</h2>
+                </div>
+                <div class="pill">Archiver / Monitor</div>
+            </div>
+            <div class="status-row">
+                <div>
+                    <strong>Archiver</strong>
+                    <div id="archiverPause" class="pill badge-success">运行状态: --</div>
+                </div>
+                <button class="ghost" data-toggle="archiver" type="button">切换状态</button>
+            </div>
+            <div class="status-row">
+                <div>
+                    <strong>Monitor</strong>
+                    <div id="monitorPause" class="pill badge-success">运行状态: --</div>
+                </div>
+                <button class="ghost" data-toggle="monitor" type="button">切换状态</button>
+            </div>
+        </div>
 
-<div class="config-section">
-    <h2>Monitor状态（暂停/运行）</h2>
-    <div id="monitorPause"></div>
-    <button onclick="togglePause('monitor')">切换状态</button>
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <p class="eyebrow">Archiver</p>
+                    <h2>归档配置</h2>
+                </div>
+                <div class="pill">JSON</div>
+            </div>
+            <div class="inputs">
+                <label for="archiverConfigReadOnly">只读配置</label>
+                <textarea id="archiverConfigReadOnly" readonly></textarea>
+                <label for="archiverConfig">可编辑配置</label>
+                <textarea id="archiverConfig"></textarea>
+            </div>
+            <div class="actions">
+                <button class="ghost" data-refresh="archiver" type="button">刷新</button>
+                <button class="primary" type="button" onclick="submitJSONUpdate('archiver')">保存变更</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <p class="eyebrow">Monitor</p>
+                    <h2>监控配置</h2>
+                </div>
+                <div class="pill">JSON</div>
+            </div>
+            <div class="inputs">
+                <label for="monitorConfigReadOnly">只读配置</label>
+                <textarea id="monitorConfigReadOnly" readonly></textarea>
+                <label for="monitorConfig">可编辑配置</label>
+                <textarea id="monitorConfig"></textarea>
+            </div>
+            <div class="actions">
+                <button class="ghost" data-refresh="monitor" type="button">刷新</button>
+                <button class="primary" type="button" onclick="submitJSONUpdate('monitor')">保存变更</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -66,7 +362,6 @@
       .catch(error => console.error('Failed to fetch state path:', error));
   }
 
-  // Submit updated state path
   function submitStatePath() {
     const path = document.getElementById('statePath').value;
 
@@ -89,9 +384,8 @@
       });
   }
 
-  // Fetch and update configuration data
   function fetchConfig(endpoint, filter, elementId) {
-    filter = filter || "all"
+    filter = filter || "all";
     fetch(`${endpoint}?filter=${filter}`)
       .then(response => response.json())
       .then(data => {
@@ -100,13 +394,16 @@
       .catch(error => console.error('Failed to fetch config:', error));
   }
 
+  function refreshConfigs(type) {
+    fetchConfig(`/zhi/core/${type}/configs`, 'writable', `${type}Config`);
+    fetchConfig(`/zhi/core/${type}/configs`, 'read_only', `${type}ConfigReadOnly`);
+  }
+
   function submitJSONUpdate(type) {
     const configData = document.getElementById(type + 'Config').value;
     try {
-      // This will throw an error if the JSON is invalid
       const json = JSON.parse(configData);
 
-      // Perform the PUT request to update the configuration
       fetch('/zhi/core/' + type + '/configs', {
         method: 'PUT',
         headers: {
@@ -133,12 +430,15 @@
     }
   }
 
-  // Fetch pause state data
   function fetchPauseState(type) {
     fetch(`/zhi/core/${type}/pause`)
       .then(response => response.json())
       .then(data => {
-        document.getElementById(`${type}Pause`).textContent = '运行状态: ' + (data.pause ? '暂停' : '运行');
+        const pauseDiv = document.getElementById(`${type}Pause`);
+        const paused = data.pause;
+        pauseDiv.textContent = '运行状态: ' + (paused ? '暂停' : '运行');
+        pauseDiv.classList.toggle('badge-success', !paused);
+        pauseDiv.classList.toggle('badge-warning', paused);
       })
       .catch(error => console.error(`Failed to fetch ${type} pause state:`, error));
   }
@@ -157,6 +457,8 @@
       .then(response => {
         if (response.ok) {
           pauseDiv.textContent = '运行状态: ' + (newState ? '暂停' : '运行');
+          pauseDiv.classList.toggle('badge-success', !newState);
+          pauseDiv.classList.toggle('badge-warning', newState);
         } else {
           alert(`Failed to toggle ${type} pause state.`);
         }
@@ -166,15 +468,23 @@
       });
   }
 
-  // Initialize the configurations and pause states on page load
   document.addEventListener('DOMContentLoaded', function () {
     fetchStatePath();
-    fetchConfig('/zhi/core/archiver/configs', 'writable', 'archiverConfig');
-    fetchConfig('/zhi/core/archiver/configs', 'read_only', 'archiverConfigReadOnly');
-    fetchConfig('/zhi/core/monitor/configs', 'writable', 'monitorConfig');
-    fetchConfig('/zhi/core/monitor/configs', 'read_only', 'monitorConfigReadOnly');
+    refreshConfigs('archiver');
+    refreshConfigs('monitor');
     fetchPauseState('archiver');
     fetchPauseState('monitor');
+
+    document.querySelectorAll('[data-refresh]').forEach(btn => {
+      btn.addEventListener('click', () => refreshConfigs(btn.getAttribute('data-refresh')));
+    });
+
+    document.querySelectorAll('[data-toggle]').forEach(btn => {
+      btn.addEventListener('click', () => togglePause(btn.getAttribute('data-toggle')));
+    });
+
+    document.getElementById('statePathSave').addEventListener('click', submitStatePath);
+    document.getElementById('statePathRefresh').addEventListener('click', fetchStatePath);
   });
 </script>
 </body>

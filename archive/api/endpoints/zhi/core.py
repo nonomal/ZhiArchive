@@ -86,6 +86,12 @@ async def set_configs(name: WorkerName, configs: dict[str, Any]):
     return await client.configurator.get_configs(ConfigFilter.WRITABLE)
 
 
-@router.get("/config", response_class=HTMLResponse)
+@router.get("/config", response_class=HTMLResponse, name="zhi:config_view")
 async def config_view(request: Request):
-    return templates.TemplateResponse("config.html", context={"request": request})
+    return templates.TemplateResponse(
+        "config.html",
+        context={
+            "request": request,
+            "zhi_login_url": request.url_for("zhi:login_view"),
+        },
+    )

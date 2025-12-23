@@ -1,143 +1,315 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>登录</title>
     <meta charset="UTF-8">
+    <title>ZhiArchive 登录</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <style>
+        :root {
+            --bg: #0c1220;
+            --panel: rgba(17, 24, 39, 0.82);
+            --card: rgba(23, 32, 49, 0.9);
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #2dd4bf;
+            --accent-strong: #14b8a6;
+            --text: #e8edf7;
+            --muted: #94a3b8;
+            --error: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f5f5f5;
-            font-family: Arial, sans-serif;
-            text-align: center;
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Manrope", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(45, 212, 191, 0.08), transparent 35%),
+            radial-gradient(circle at 80% 0%, rgba(125, 211, 252, 0.08), transparent 30%),
+            linear-gradient(135deg, #0b1220 0%, #0e172a 60%, #0c1220 100%);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 20px;
         }
 
-        h1 {
-            color: #333;
-            margin-top: 50px;
+        .shell {
+            width: min(1080px, 100%);
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 28px;
+            align-items: stretch;
         }
 
-        form {
-            background-color: #fff;
-            border-radius: 5px;
-            display: inline-block;
-            margin-top: 30px;
-            padding: 20px;
-            text-align: left;
+        @media (max-width: 900px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03);
+        }
+
+        .panel h1 {
+            margin: 0 0 10px;
+            font-size: 30px;
+            letter-spacing: 0.5px;
+        }
+
+        .panel p {
+            margin: 0 0 20px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .badge {
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 8px 12px;
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.02);
+            font-size: 13px;
+            letter-spacing: 0.2px;
+        }
+
+        .form-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .hint {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 13px;
         }
 
         label {
+            font-size: 14px;
+            color: var(--muted);
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
-        input[type=text], input[type=password] {
-            border-radius: 3px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            font-size: 16px;
-            padding: 10px;
+        input[type=text],
+        input[type=password] {
             width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            font-size: 15px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
 
-        input[type=submit] {
-            background-color: #4CAF50;
+        input[type=text]:focus,
+        input[type=password]:focus {
+            outline: none;
+            border-color: rgba(45, 212, 191, 0.6);
+            box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.08);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        button[type=submit] {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
             border: none;
-            border-radius: 3px;
-            color: white;
+            color: #051016;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
             cursor: pointer;
-            font-size: 18px;
-            padding: 10px 20px;
-            margin-top: 20px;
-            width: auto;
+            letter-spacing: 0.2px;
+            box-shadow: 0 10px 30px rgba(45, 212, 191, 0.25);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
         }
 
-        input[type=submit]:hover {
-            background-color: #3e8e41;
+        button[type=submit]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 36px rgba(45, 212, 191, 0.32);
         }
 
-        div.toast {
-            position: absolute;
-            top: 20%;
-            left: 30%;
-            background-color: skyblue;
-            color: red;
+        button[type=submit]:active {
+            transform: translateY(0);
+            filter: brightness(0.96);
         }
 
-        .error-message {
-            background-color: #ffe7e7;
-            border: 1px solid #ff4d4f;
-            color: #ff4d4f;
-            padding: 10px;
-            margin-bottom: 10px;
+        button[type=submit][disabled] {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
+        .alert {
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+        }
 
+        .alert.error {
+            border-color: rgba(248, 113, 113, 0.4);
+            background: rgba(248, 113, 113, 0.08);
+            color: #fecdd3;
+        }
+
+        .alert.info {
+            border-color: rgba(125, 211, 252, 0.35);
+            background: rgba(125, 211, 252, 0.08);
+            color: #dbeafe;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 6px rgba(45, 212, 191, 0.2);
+        }
     </style>
-
-    <script>
-      function showError(message) {
-        const errorMessage = document.getElementById("error-message");
-        errorMessage.innerText = message;
-        errorMessage.style.display = "inline-block";
-      }
-
-      function submitForm(event) {
-        event.preventDefault();
-
-        let username = document.getElementById("username").value;
-        let password = document.getElementById("password").value;
-
-        let data = {"username": username, "password": password};
-
-        fetch('{{ login_url }}', {
-          method: 'POST',
-          body: JSON.stringify(data),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-          .then(response => {
-            if (response.status <= 299) {
-              window.location = "/";
-              return "登录成功";
-            } else if (response.status === 401) {
-              return response.text();
-            } else {
-              return "用户名或密码错误";
-            }
-          }).then(error => {
-          showError(error);
-        });
-      }
-
-      document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById("login-form").addEventListener("submit", submitForm);
-      });
-    </script>
-
-
 </head>
-
 <body>
-
-<h1>登录</h1>
-<div class="toast">
-    {% if toast %}
-        <p>{{ toast }}</p>
-    {% endif %}
+<div class="shell">
+    <div class="panel">
+        <h1>ZhiArchive 控制台</h1>
+        <p>登录后可管理采集进度、监控配置与运行状态。凭证会直接发送至 API，不会在浏览器中持久保存。</p>
+        <div class="badges">
+            <span class="badge">安全登录</span>
+            <span class="badge">快速访问</span>
+            <span class="badge">内网可用</span>
+        </div>
+        {% if toast %}
+            <div class="alert info" style="margin-top: 20px;">
+                <div class="toast">
+                    <span class="toast-dot"></span>
+                    <span>{{ toast }}</span>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="form-card">
+        <div class="form-header">
+            <h2>登录账户</h2>
+            <span class="hint">使用 API 提供的管理员凭证</span>
+        </div>
+        <div id="feedback" class="alert error" style="display: none;"></div>
+        <form id="login-form" novalidate>
+            <div>
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" autocomplete="username" required>
+            </div>
+            <div>
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
+            </div>
+            <div class="actions">
+                <button type="submit" id="submit-btn">登录</button>
+                <span class="hint">登录后自动跳转至首页</span>
+            </div>
+        </form>
+    </div>
 </div>
-<div id="error-message" class="error-message" style="display: none"></div>
-<br>
 
-<form id="login-form">
-    <label for="username">用户名:</label>
-    <input type="text" id="username" name="username"><br><br>
+<script>
+  const form = document.getElementById('login-form');
+  const feedback = document.getElementById('feedback');
+  const submitBtn = document.getElementById('submit-btn');
+  const redirectUrl = '{{ (redirect_url | default('/zhi/core/config')) }}';
 
-    <label for="password">密码:</label>
-    <input type="password" id="password" name="password" autocomplete="true"><br><br>
+  function showMessage(message) {
+    feedback.textContent = message;
+    feedback.style.display = 'block';
+  }
 
-    <input type="submit" value="登录">
-</form>
+  async function submitForm(event) {
+    event.preventDefault();
+    feedback.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = '登录中...';
+
+    const data = {
+      username: document.getElementById('username').value.trim(),
+      password: document.getElementById('password').value
+    };
+
+    try {
+      const response = await fetch('{{ login_url }}', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {'Content-Type': 'application/json'}
+      });
+
+      if (response.status <= 299) {
+        window.location = redirectUrl;
+        return;
+      }
+
+      if (response.status === 401) {
+        const text = await response.text();
+        showMessage(text || '用户名或密码错误');
+        return;
+      }
+
+      showMessage('用户名或密码错误');
+    } catch (error) {
+      showMessage('登录失败，请重试。');
+      console.error(error);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '登录';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    form.addEventListener('submit', submitForm);
+  });
+</script>
 </body>
 </html>

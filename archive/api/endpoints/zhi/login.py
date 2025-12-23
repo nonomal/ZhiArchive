@@ -38,9 +38,15 @@ class QRCodeInfo(BaseModel):
     state_path: str
 
 
-@router.get("", response_class=HTMLResponse)
+@router.get("", response_class=HTMLResponse, name="zhi:login_view")
 async def login_view(request: Request):
-    return templates.TemplateResponse("qrcode.html", context={"request": request})
+    return templates.TemplateResponse(
+        "qrcode.html",
+        context={
+            "request": request,
+            "redirect_url": request.url_for("zhi:config_view"),
+        },
+    )
 
 
 @router.get("/qrcode/{prefix}/info", response_model=QRCodeInfo)
