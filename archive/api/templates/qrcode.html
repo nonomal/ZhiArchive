@@ -219,7 +219,33 @@
 </div>
 
 <script>
-  (() => {
+  function redirectToLogin() {
+    const target = encodeURIComponent(window.location.href);
+    window.location.replace(`/auth/login?redirect=${target}`);
+  }
+
+  async function ensureAuthenticated() {
+    try {
+      const response = await fetch('/auth/me', {credentials: 'include'});
+      if (response.status === 200) {
+        return true;
+      }
+      if (response.status === 401) {
+        redirectToLogin();
+        return false;
+      }
+      console.error('无法确认登录状态', response.status);
+    } catch (error) {
+      console.error('验证登录状态失败:', error);
+    }
+    return false;
+  }
+
+  (async () => {
+    const authed = await ensureAuthenticated();
+    if (!authed) {
+      return;
+    }
     const qrImage = document.getElementById('qrimage');
     const placeholder = document.getElementById('qr-placeholder');
     const placeholderText = document.getElementById('placeholder-text');

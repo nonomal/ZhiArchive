@@ -251,7 +251,7 @@
             </div>
             <div class="actions">
                 <button type="submit" id="submit-btn">登录</button>
-                <span class="hint">登录后自动跳转至首页</span>
+                <span class="hint">登录后自动跳回来源页</span>
             </div>
         </form>
     </div>
@@ -261,7 +261,10 @@
   const form = document.getElementById('login-form');
   const feedback = document.getElementById('feedback');
   const submitBtn = document.getElementById('submit-btn');
-  const redirectUrl = '{{ (redirect_url | default('/zhi/core/config')) }}';
+  const defaultRedirect = {{ redirect_url | default('/zhi/core/config') | tojson }};
+  const loginUrl = {{ login_url | tojson }};
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirectUrl = urlParams.get('redirect') || defaultRedirect;
 
   function showMessage(message) {
     feedback.textContent = message;
@@ -280,7 +283,7 @@
     };
 
     try {
-      const response = await fetch('{{ login_url }}', {
+      const response = await fetch(loginUrl, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {'Content-Type': 'application/json'}

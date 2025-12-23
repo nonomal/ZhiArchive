@@ -4,18 +4,23 @@ from enum import Enum
 from typing import Any
 
 import aiofiles
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
+from archive.api.render import templates
+from archive.api.security import verify_user_from_cookie
 from archive.core.api_client import get_api_client
 from archive.core.base import ConfigFilter
 
-from ...render import templates
-from . import PauseStatus
 from .login import get_qrcode_task
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(verify_user_from_cookie)])
+public_router = APIRouter()
+
+
+class PauseStatus(BaseModel):
+    pause: bool
 
 
 class WorkerName(str, Enum):
@@ -86,12 +91,12 @@ async def set_configs(name: WorkerName, configs: dict[str, Any]):
     return await client.configurator.get_configs(ConfigFilter.WRITABLE)
 
 
-@router.get("/config", response_class=HTMLResponse, name="zhi:config_view")
+@public_router.get("/config", response_class=HTMLResponse, name="zhi:config_view")
 async def config_view(request: Request):
     return templates.TemplateResponse(
         "config.html",
         context={
             "request": request,
-            "zhi_login_url": request.url_for("zhi:login_view"),
+            "zhi_login_url": str(request.url_for("zhi:login_view")),
         },
     )

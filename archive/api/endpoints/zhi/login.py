@@ -2,16 +2,18 @@ import asyncio
 import os
 import time
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 
 from archive.api.render import templates
+from archive.api.security import verify_user_from_cookie
 from archive.config import settings
 from archive.core.api_client import get_api_client
 from archive.core.login import QRCodeTask, QRCodeTaskStatus, ZhiLoginClient
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(verify_user_from_cookie)])
+public_router = APIRouter()
 
 
 def get_qrcode_task(prefix: str) -> QRCodeTask:
@@ -38,13 +40,13 @@ class QRCodeInfo(BaseModel):
     state_path: str
 
 
-@router.get("", response_class=HTMLResponse, name="zhi:login_view")
+@public_router.get("", response_class=HTMLResponse, name="zhi:login_view")
 async def login_view(request: Request):
     return templates.TemplateResponse(
         "qrcode.html",
         context={
             "request": request,
-            "redirect_url": request.url_for("zhi:config_view"),
+            "redirect_url": str(request.url_for("zhi:config_view")),
         },
     )
 
