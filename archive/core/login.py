@@ -156,20 +156,23 @@ class ZhiLogin(Base):
             while True:
                 try:
                     if qrcode_task := await self.get_new_req():
-                        logger.info(f"new qrcode task: {qrcode_task}")
+                        logger.info(f"新的登录二维码任务: {qrcode_task}")
                         await self.get_qrcode(playwright, qrcode_task)
                 except Exception as e:
                     logger.exception(e)
                 await asyncio.sleep(1)
 
     async def _wait_for_login_success(self, page: Page, task_key: str):
+        logger.info(f"等待扫码登录: {task_key}")
         try:
             await self.set_qrcode_task_status(
                 task_key, QRCodeTaskStatus.WAITING_FOR_SCAN
             )
             await page.wait_for_url(at_home, timeout=self.scan_timeout)
+            logger.info(f"登录成功: {task_key}")
             await self.set_qrcode_task_status(task_key, QRCodeTaskStatus.OK)
         except PlaywrightTimeoutError:
+            logger.info(f"登录超时: {task_key}")
             await self.set_qrcode_task_status(task_key, QRCodeTaskStatus.FAILED)
         finally:
             await page.close()
@@ -178,7 +181,9 @@ class ZhiLogin(Base):
         img_bytes = await page.locator("div.Qrcode-img").screenshot(
             type="png", path=qrcode_path
         )
+        # 确保二维码图片有效, 默认占位图片大概2.7KB，二维码图片大概7KB
         if len(img_bytes) < 4096 + 100:
+            logger.info(f"二维码保存成功: {qrcode_path}")
             return await self._wait_qrcode(page, qrcode_path)
 
     async def get_qrcode(
@@ -202,4 +207,5 @@ class ZhiLogin(Base):
 
             await self._wait_for_login_success(page, qrcode_task.task_name)
             await context.storage_state(path=qrcode_task.state_path)
+            logger.info(f"保存登录状态: {qrcode_task.state_path}")
             return img_bytes

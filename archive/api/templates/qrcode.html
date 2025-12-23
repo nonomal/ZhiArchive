@@ -1,82 +1,382 @@
 {# ChatGPT协助的 #}
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-    <title>二维码页面</title>
+    <meta charset="UTF-8">
+    <title>ZhiArchive 扫码登录</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        #qrcode {
-            margin: 30px auto;
+        :root {
+            --bg: #0c1220;
+            --panel: rgba(17, 24, 39, 0.82);
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #2dd4bf;
+            --accent-strong: #14b8a6;
+            --text: #e8edf7;
+            --muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Manrope", "Segoe UI", sans-serif;
+            background: radial-gradient(circle at 20% 20%, rgba(45, 212, 191, 0.08), transparent 35%),
+            radial-gradient(circle at 80% 0%, rgba(125, 211, 252, 0.08), transparent 30%),
+            linear-gradient(135deg, #0b1220 0%, #0e172a 60%, #0c1220 100%);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 18px;
+        }
+
+        .card {
+            width: min(560px, 100%);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03);
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 0 0 6px;
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 30px;
+            letter-spacing: 0.3px;
+        }
+
+        .desc {
+            margin: 0 0 18px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .qr-area {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .qr-frame {
+            width: 240px;
+            height: 240px;
+            border-radius: 16px;
+            border: 1px dashed var(--border);
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.04), rgba(125, 211, 252, 0.04));
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #qrimage {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 14px;
+            opacity: 0;
+            transform: scale(0.98);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        #qrimage.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .placeholder {
+            position: absolute;
+            inset: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: var(--muted);
             text-align: center;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .placeholder.hidden {
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+        }
+
+        .pulse {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.9), rgba(125, 211, 252, 0.8));
+            box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.35);
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.98);
+                box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.35);
+            }
+            70% {
+                transform: scale(1.04);
+                box-shadow: 0 0 0 14px rgba(45, 212, 191, 0);
+            }
+            100% {
+                transform: scale(0.98);
+                box-shadow: 0 0 0 0 rgba(45, 212, 191, 0);
+            }
+        }
+
+        .status {
+            text-align: center;
+            width: 100%;
+        }
+
+        #status-main {
+            margin: 0 0 6px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        #status-sub {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .ghost-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        .ghost-btn:hover {
+            border-color: rgba(45, 212, 191, 0.6);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 30px rgba(45, 212, 191, 0.18);
+        }
+
+        .ghost-btn:active {
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-<div id="qrcode">
-    <p>成功登录后会自动应用当前state</p>
-    <img id="qrimage" src="" alt="二维码">
-    <p id="status"></p>
+<div class="card">
+    <div class="eyebrow">ZhiArchive</div>
+    <h1>扫码登录</h1>
+    <p class="desc">请确保login worker已启动，获取二维码后用知乎 App 扫码完成登录。</p>
+
+    <div class="qr-area">
+        <div class="qr-frame" aria-live="polite">
+            <div class="placeholder" id="qr-placeholder">
+                <div class="pulse"></div>
+                <div id="placeholder-text">正在获取二维码...</div>
+            </div>
+            <img id="qrimage" alt="知乎登录二维码">
+        </div>
+        <div class="status">
+            <p id="status-main">正在申请二维码...</p>
+            <p id="status-sub">二维码需要数秒生成，请保持页面开启。</p>
+        </div>
+        <div class="actions">
+            <button class="ghost-btn" id="retry-btn" type="button">重新获取</button>
+        </div>
+    </div>
 </div>
 
 <script>
-  // 用于存储轮询定时器的变量
-  let timer;
+  (() => {
+    const qrImage = document.getElementById('qrimage');
+    const placeholder = document.getElementById('qr-placeholder');
+    const placeholderText = document.getElementById('placeholder-text');
+    const statusMain = document.getElementById('status-main');
+    const statusSub = document.getElementById('status-sub');
+    const retryBtn = document.getElementById('retry-btn');
+    const redirectUrl = "{{ redirect_url | default('/zhi/core/config') }}";
+    const WAIT_FOR_WORKER_MS = 45000;
 
-  // 请求二维码接口
-  function requestQRCode() {
-    // 发起请求并获取二维码的URL
-    // 请将以下示例中的 URL 替换为您实际的二维码接口 URL
-    fetch('/zhi/login/qrcode/new', {
-      method: 'GET'
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data)
-        // 将获取的二维码URL设置到img元素中
-        let qr_image = document.getElementById("qrimage")
-        qr_image.src = "/zhi/login/qrcode/" + data.qrcode;
-        qr_image.onerror = function () {
-          console.log('二维码加载失败');
-          qr_image.src = "/zhi/login/qrcode/" + data.qrcode + '?timestamp=' + new Date().getTime();
-        }
-        // 开始轮询用户扫码状态
-        pollUserScanStatus(data.qrcode);
-      })
-      .catch(error => {
-        console.error('请求二维码接口失败', error);
-      });
-  }
+    let currentPrefix = null;
+    let imageTimer = null;
+    let scanTimer = null;
+    let refreshing = false;
+    let lastRequestAt = 0;
 
-  // 轮询用户扫码状态
-  function pollUserScanStatus(qrcode) {
-    // 每秒钟轮询一次
-    timer = setInterval(() => {
-      // 发起请求并获取用户扫码状态
-      // 用户扫码状态接口 URL
-      fetch("/zhi/login/qrcode/" + qrcode + "/scan_status", {
-        method: 'GET'
-      })
-        .then(response => response.json())
-        .then(data => {
-          // 根据用户扫码状态处理逻辑
-          if (data.status === "ok") {
-            clearInterval(timer); // 停止轮询
-            document.getElementById('status').textContent = '用户已完成扫码，正在跳转...';
-            // 跳转的页面 URL
-            fetch("/zhi/login/state/" + qrcode + "/use", {method: "POST"});
-            window.location.href = '/zhi/core/config';
-          } else {
-            document.getElementById('status').textContent = '等待用户扫码...扫码完成后请等待，将自动跳转至配置页';
+    function setStatus(main, sub) {
+      statusMain.textContent = main;
+      if (sub !== undefined) {
+        statusSub.textContent = sub;
+      }
+    }
+
+    function showPlaceholder(message) {
+      placeholderText.textContent = message;
+      placeholder.classList.remove('hidden');
+      qrImage.classList.remove('visible');
+    }
+
+    function hidePlaceholder() {
+      placeholder.classList.add('hidden');
+    }
+
+    function startImagePolling(prefix) {
+      clearInterval(imageTimer);
+      showPlaceholder('正在生成二维码...');
+      const tryLoad = () => {
+        const src = `/zhi/login/qrcode/${prefix}?ts=${Date.now()}`;
+        const probe = new Image();
+        probe.onload = () => {
+          clearInterval(imageTimer);
+          qrImage.src = src;
+          qrImage.classList.add('visible');
+          hidePlaceholder();
+          setStatus('请用知乎 App 扫码登录', '扫码完成后等待自动跳转。');
+        };
+        probe.onerror = () => {};
+        probe.src = src;
+      };
+      tryLoad();
+      imageTimer = setInterval(tryLoad, 700);
+    }
+
+    async function handleScanSuccess(prefix) {
+      clearInterval(scanTimer);
+      setStatus('扫码成功，正在写入登录状态...', '请勿关闭页面，稍后将自动跳转。');
+      try {
+        await fetch(`/zhi/login/state/${prefix}/use`, {method: 'POST'});
+      } catch (error) {
+        console.error(error);
+      } finally {
+        window.location.href = redirectUrl;
+      }
+    }
+
+    async function pollStatus(prefix) {
+      clearInterval(scanTimer);
+      scanTimer = setInterval(async () => {
+        try {
+          const response = await fetch(`/zhi/login/qrcode/${prefix}/scan_status`);
+          if (!response.ok) {
+            throw new Error('状态查询失败');
           }
-        })
-        .catch(error => {
-          document.getElementById('status').textContent = '轮询扫码状态接口失败';
-          console.error('轮询扫码状态接口失败', error);
-        });
-    }, 1000);
-  }
+          const data = await response.json();
+          switch (data.status) {
+            case 'ok':
+              await handleScanSuccess(prefix);
+              return;
+            case 'failed':
+              clearInterval(scanTimer);
+              clearInterval(imageTimer);
+              qrImage.classList.remove('visible');
+              showPlaceholder('二维码已失效，请点击“重新获取”');
+              setStatus('二维码已失效，请点击“重新获取”', '可能长时间未扫码或任务超时。');
+              return;
+            case 'not_exist': {
+              const elapsed = Date.now() - lastRequestAt;
+              if (elapsed < WAIT_FOR_WORKER_MS) {
+                setStatus('正在等待登录 worker 启动浏览器获取二维码...', '请稍候，二维码生成后会自动显示。');
+                break;
+              }
+              clearInterval(scanTimer);
+              clearInterval(imageTimer);
+              qrImage.classList.remove('visible');
+              showPlaceholder('二维码获取超时，请点击“重新获取”');
+              setStatus('二维码获取超时，请点击“重新获取”', '可能登录 worker 未启动或生成超时。');
+              return;
+            }
+            case 'pending':
+              setStatus('二维码生成中...', '正在等待登录 worker 输出二维码。');
+              break;
+            case 'waiting_for_scan':
+              if (qrImage.classList.contains('visible')) {
+                setStatus('请用知乎 App 扫码登录', '扫码完成后等待自动跳转。');
+              } else {
+                setStatus('二维码生成中...', '正在等待登录 worker 输出二维码。');
+              }
+              break;
+            default:
+              setStatus('二维码生成中...', '正在等待登录 worker 输出二维码。');
+          }
+        } catch (error) {
+          console.error(error);
+          setStatus('状态查询失败，稍后自动重试...', '如长时间无响应请刷新页面。');
+        }
+      }, 1000);
+    }
 
-  // 页面加载完成后开始请求二维码接口
-  window.addEventListener('load', requestQRCode);
+    async function refreshQRCode(isRetry = false) {
+      if (refreshing) {
+        return;
+      }
+      refreshing = true;
+      lastRequestAt = Date.now();
+      clearInterval(imageTimer);
+      clearInterval(scanTimer);
+      currentPrefix = null;
+      qrImage.removeAttribute('src');
+      qrImage.classList.remove('visible');
+      showPlaceholder(isRetry ? '正在重新申请二维码...' : '正在申请二维码...');
+      setStatus(
+        isRetry ? '正在重新获取二维码...' : '正在申请二维码...',
+        '请保持页面打开，二维码生成后会自动展示。'
+      );
+      try {
+        const response = await fetch('/zhi/login/qrcode/new');
+        if (!response.ok) {
+          throw new Error('获取二维码失败');
+        }
+        const data = await response.json();
+        currentPrefix = data.qrcode;
+        startImagePolling(currentPrefix);
+        pollStatus(currentPrefix);
+      } catch (error) {
+        console.error(error);
+        setStatus('二维码获取失败', '请检查网络后重试。');
+      } finally {
+        refreshing = false;
+      }
+    }
+
+    retryBtn.addEventListener('click', () => refreshQRCode(true));
+    document.addEventListener('DOMContentLoaded', () => refreshQRCode());
+    window.addEventListener('beforeunload', () => {
+      clearInterval(imageTimer);
+      clearInterval(scanTimer);
+    });
+  })();
 </script>
 </body>
 </html>

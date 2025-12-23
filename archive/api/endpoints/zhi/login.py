@@ -65,14 +65,14 @@ async def new_login_qrcode():
 
 
 @router.get("/qrcode/{prefix}", response_class=FileResponse)
-async def login_qrcode(prefix: str, timeout: int = 10):
+async def login_qrcode(prefix: str, timeout: int = 30):
     start = time.perf_counter()
     qrcode_task = get_qrcode_task(prefix)
     qrcode_path = qrcode_task.qrcode_path
     while start + timeout > time.perf_counter():
         if qrcode_path.exists():
             return FileResponse(qrcode_path)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.2)
     raise HTTPException(status_code=404)
 
 
