@@ -1,9 +1,18 @@
 FROM python:3.12-bookworm
 
+ARG TZ=Asia/Shanghai
+ENV TZ=${TZ}
+
 RUN echo deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware > /etc/apt/sources.list && \
     echo deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware >> /etc/apt/sources.list && \
     echo deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware >> /etc/apt/sources.list && \
     echo deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware >> /etc/apt/sources.list
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends tzdata && \
+    ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && \
+    echo ${TZ} > /etc/timezone && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
     pip install uv
