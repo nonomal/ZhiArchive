@@ -1,5 +1,6 @@
 import json
 import os
+import pathlib
 from enum import Enum
 from typing import Any
 
@@ -11,7 +12,7 @@ from pydantic import BaseModel
 from archive.api.render import templates
 from archive.api.security import verify_user_from_cookie
 from archive.core.api_client import get_api_client
-from archive.core.base import ConfigFilter
+from archive.core.base import BaseWorker, ConfigFilter
 
 from .login import get_qrcode_task
 
@@ -35,6 +36,11 @@ class StatePath(BaseModel):
     path: str
 
 
+class TestStateResult(BaseModel):
+    test_url: str
+    ok: bool
+
+
 @router.get("/state_path", response_model=StatePath)
 async def get_state_path():
     client = get_api_client()
@@ -46,6 +52,20 @@ async def set_state_path(state_path: StatePath):
     client = get_api_client()
     await client.set_state_path_to_redis(state_path.path)
     return {"path": str(await client.get_state_path())}
+
+
+@router.post(
+    "/state_path/test",
+    summary="测试state文件是否有效",
+    description="会启动浏览器访问知乎进行测试",
+    response_model=TestStateResult,
+)
+async def test_state_path(state_path: StatePath):
+    if not pathlib.Path(state_path.path).exists():
+        raise HTTPException(400, "State file not found")
+    worker = BaseWorker()
+    result = await worker.test_state(state_path.path)
+    return result
 
 
 @router.post("/states", summary="新建state文件", response_model=StatePath)

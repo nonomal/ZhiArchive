@@ -9,6 +9,7 @@ from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from archive.config import default, settings
 from archive.core.base import (
     ActivityItem,
+    ActivityMeta,
     ArchiveTask,
     BaseWorker,
     Cfg,
@@ -122,16 +123,17 @@ class Monitor(BaseWorker):
                 continue
             target = await self.extract_one(item_locator)
             self.logger.info(f"于{acted_at_text} {action_texts}\n\t{target['title']}")
-            item = {
-                "id": uuid_hex(),
-                "meta": {
-                    "action": action_text,
-                    "target_type": target_type.value,
-                    "acted_at": acted_at,
-                    "raw": meta_texts,
-                },
-                "target": target,
-            }
+            item = ActivityItem(
+                id=uuid_hex(),
+                target=target,
+                meta=ActivityMeta(
+                    action=action_text,
+                    target_type=target_type,
+                    acted_at=acted_at,
+                    raw=meta_texts,
+                ),
+                people=self.people,
+            )
             items.append(item)
             item_filename = get_validate_filename(
                 f"{item['meta']['action']}-{item['target']['title']}-{item['id'][:8]}.png"
@@ -141,10 +143,10 @@ class Monitor(BaseWorker):
 
         return items, count, acted_at
 
-    async def fetch(self, until: datetime, page: Page) -> list["ActivityItem"]:
+    async def fetch(self, until: datetime, page: Page) -> list[ActivityItem]:
         cur_acted_at = datetime.now()
         start = 0
-        items = []
+        items: list[ActivityItem] = []
         i = 1
         self.logger.info("按动态页从上至下（从新向旧）抓取...")
         while cur_acted_at > until:
@@ -208,7 +210,6 @@ class Monitor(BaseWorker):
             **context_extra,
         ) as context:
             page = await self.new_page(context)
-            page.set_default_timeout(self.page_default_timeout)
             await self.goto(page, self.person_page_url)
             await asyncio.sleep(1)
             results = await self.fetch(self.fetch_until, page)

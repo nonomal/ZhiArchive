@@ -7,7 +7,7 @@ import pathlib
 from datetime import date, datetime
 from enum import Enum
 from functools import lru_cache
-from typing import Any, Callable, Coroutine, TypeAlias, TypedDict
+from typing import Any, AsyncGenerator, Callable, Coroutine, TypeAlias, TypedDict
 from urllib import parse
 
 from playwright.async_api import (
@@ -56,8 +56,8 @@ class Target(TypedDict):
 
 
 class ActivityMeta(TypedDict):
-    action: str
-    target_type: str
+    action: Action | str
+    target_type: TargetType | str
     acted_at: datetime | str
     raw: list["str"] | None
 
@@ -66,6 +66,7 @@ class ActivityItem(TypedDict):
     id: str
     meta: ActivityMeta
     target: Target
+    people: str | None  # 小明赞同了小红的回答，此处指小明
 
 
 def get_correct_target_type(action_text, target_type_text) -> TargetType | None:
@@ -105,7 +106,7 @@ async def get_context(
     ) = init_context,
     locale="zh-CN",
     **extra,
-) -> BrowserContext:
+) -> AsyncGenerator[BrowserContext, None]:
     browser: Browser = await getattr(playwright, settings.browser.value).launch(
         headless=browser_headless
     )
@@ -247,7 +248,7 @@ class RedisConfigurator:
 
 
 class BaseWorker:
-    name = ""
+    name = "base"
     output_name = ""
     redis_key_prefix = "zhi_archive:archive"
     state_path_key = f"{redis_key_prefix}:state_path"
@@ -401,7 +402,7 @@ class BaseWorker:
         state_auto_save: bool = True,
         browser_headless=True,
         **context_extra,
-    ) -> BrowserContext:
+    ):
         state_path = await self.get_state_path()
         self.logger.info(f"Currently used state path: {state_path}")
         async with get_context(
@@ -493,3 +494,27 @@ class BaseWorker:
                         await self.handle_abnormal()
                     except Exception as e:
                         self.logger.exception(e)
+
+    async def test_state(self, state_path: pathlib.Path | str):
+        """
+        测试当前state/cookie是否有效（是否处于登录状态）
+        """
+        result = {
+            "test_url": "https://www.zhihu.com/",  # 未登录访问此地址会跳转到登录页面: https://www.zhihu.com/signin?next=%2F
+            "ok": True,
+        }
+        async with Stealth().use_async(async_playwright()) as playwright:
+            async with get_context(
+                playwright,
+                state_path=state_path,
+                state_auto_save=False,
+                browser_headless=True,
+                init=self.init_context,
+            ) as context:
+                page = await self.new_page(context)
+                response = await self.goto(page, result["test_url"])
+                r = parse.urlparse(response.url)
+                result["test_url"] = response.url
+                if r.path == "signin":
+                    result["ok"] = False
+                return result

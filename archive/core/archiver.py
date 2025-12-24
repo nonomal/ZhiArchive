@@ -44,6 +44,7 @@ class Archiver(BaseWorker):
         page = await self.new_page(context)
         await page.route(url, self.referrer_route)
         await self.goto(page, url)
+        # 确保页面中的图片被加载
         if meta["target_type"] == TargetType.ANSWER:
             imgs_locator = page.locator("div.AnswerCard figure img")
         else:
@@ -58,6 +59,7 @@ class Archiver(BaseWorker):
         title = get_validate_filename(
             f"{item['meta']['action']}-{item['target']['title']}-{item['id'][:8]}"
         )
+        # todo: 或许直接通过`ActivityItem.people`来确定保存地址更合理
         target_dir = self.get_date_dir(acted_at.date()).joinpath(title)
         screenshot_path = target_dir.joinpath(f"{title}.png")
         page_scroll_height = await page.evaluate(get_page_scrollHeight)
