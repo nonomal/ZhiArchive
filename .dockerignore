@@ -118,7 +118,4 @@ results/*
 states/*
 !states/.gitkeep
 
-.agent
-
-# uv
-uv.lock
+.git/

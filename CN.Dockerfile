@@ -33,10 +33,8 @@ RUN uv pip install --system -r /opt/zhi-archive/requirements.txt
 
 # 3. 安装浏览器和系统依赖
 # 注意：这一步仍需以 Root 运行，因为 --with-deps 需要安装系统库(apt-get)
-RUN playwright install --with-deps chromium
-
-# 4. 修正权限
-RUN chmod -R 777 $PLAYWRIGHT_BROWSERS_PATH
+RUN playwright install --with-deps chromium && rm -rf /var/lib/apt/lists/* && \
+    chmod -R 777 $PLAYWRIGHT_BROWSERS_PATH
 
 COPY ./ /opt/zhi-archive
 WORKDIR /opt/zhi-archive
