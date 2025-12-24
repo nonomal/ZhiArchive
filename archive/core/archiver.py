@@ -1,10 +1,12 @@
 import asyncio
 import json
 from datetime import datetime
+from typing import Literal
 from urllib import parse
 
 import aiofiles
-from playwright.async_api import BrowserContext, Route
+from playwright.async_api import Error as PlaywrightError
+from playwright.async_api import Page, Route
 
 from archive.config import settings
 from archive.core.base import ActivityItem, BaseWorker, Cfg, TargetType
@@ -19,7 +21,8 @@ class Archiver(BaseWorker):
     configurable = BaseWorker.configurable + [
         Cfg(
             "screenshot_max_page_scroll_height",
-        )
+        ),
+        Cfg("save_type"),
     ]
 
     def __init__(self, *args, **kwargs):
@@ -27,21 +30,20 @@ class Archiver(BaseWorker):
         self.screenshot_max_page_scroll_height = (
             settings.screenshot_max_page_scroll_height
         )
+        self.save_type: Literal["jpeg", "png"] = "jpeg"
 
     async def referrer_route(self, route: Route):
         headers = route.request.headers
         headers["Referer"] = self.person_page_url
         await route.continue_(headers=headers)
 
-    async def store_one(self, item: ActivityItem, context: BrowserContext):
-        # 每个对象都新开一个标签页
+    async def store_one(self, item: ActivityItem, page: Page):
         target = item["target"]
         meta = item["meta"]
         if not target["link"]:
             return
         r = parse.urlparse(target["link"])
         url = "https://" + "".join(r[1:])
-        page = await self.new_page(context)
         await page.route(url, self.referrer_route)
         await self.goto(page, url)
         # 确保页面中的图片被加载
@@ -61,7 +63,7 @@ class Archiver(BaseWorker):
         )
         # todo: 或许直接通过`ActivityItem.people`来确定保存地址更合理
         target_dir = self.get_date_dir(acted_at.date()).joinpath(title)
-        screenshot_path = target_dir.joinpath(f"{title}.png")
+        screenshot_path = target_dir.joinpath(f"{title}.{self.save_type}")
         page_scroll_height = await page.evaluate(get_page_scrollHeight)
         if 0 < self.screenshot_max_page_scroll_height < page_scroll_height:
             page_scroll_width = await page.evaluate(get_page_scrollWidth)
@@ -72,13 +74,13 @@ class Archiver(BaseWorker):
                 "height": self.screenshot_max_page_scroll_height,
             }
             self.logger.warning(
-                f"Page's scrollHeight({page_scroll_height}) is greater than `screenshot_max_page_scroll_height`({self.screenshot_max_page_scroll_height})"
+                f"Page's scrollHeight({page_scroll_height}) is greater than `screenshot_max_page_scroll_height`({self.screenshot_max_page_scroll_height})."
             )
         else:
             clip = None
         self.logger.info(f"Saving screenshot to {screenshot_path}.")
         await page.screenshot(
-            path=screenshot_path, type="png", full_page=True, clip=clip
+            path=screenshot_path, type=self.save_type, full_page=True, clip=clip
         )
         info = {
             "title": target["title"],
@@ -94,6 +96,7 @@ class Archiver(BaseWorker):
         await page.keyboard.press("PageDown")
         await asyncio.sleep(0.5)
         await page.keyboard.press("PageDown")
+        return page
 
     async def store(
         self,
@@ -110,7 +113,14 @@ class Archiver(BaseWorker):
             empty_page = await self.new_page(context)
             self.logger.info(f"Will fetch {len(item_list)} items")
             for item in item_list:
-                await self.store_one(item, context)
+                # 每个对象都新开一个标签页
+                page = await self.new_page(context)
+                try:
+                    await self.store_one(item, page=page)
+                except PlaywrightError as e:
+                    self.logger.warning(e)
+                finally:
+                    await page.close()
                 await asyncio.sleep(1)
             self.logger.info("Fetch done")
             await empty_page.close()

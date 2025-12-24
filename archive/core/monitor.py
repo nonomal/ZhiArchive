@@ -2,6 +2,7 @@ import asyncio
 import json
 import pathlib
 from datetime import datetime, timedelta
+from typing import Literal
 
 from playwright.async_api import Locator, Page
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
@@ -31,6 +32,7 @@ class Monitor(BaseWorker):
     output_name = "activities"
     configurable = BaseWorker.configurable + [
         Cfg("fetch_until", dt_toisoformat, dt_fromisoformat),
+        Cfg("save_type"),
         Cfg("latest_dt", dt_toisoformat, dt_fromisoformat, read_only=True),
     ]
 
@@ -51,6 +53,7 @@ class Monitor(BaseWorker):
         )
         self.fetch_until = fetch_until
         self.latest_dt = datetime.now()
+        self.save_type: Literal["jpeg", "png"] = "jpeg"
 
     async def extract_one(
         self,
@@ -136,10 +139,10 @@ class Monitor(BaseWorker):
             )
             items.append(item)
             item_filename = get_validate_filename(
-                f"{item['meta']['action']}-{item['target']['title']}-{item['id'][:8]}.png"
+                f"{item['meta']['action']}-{item['target']['title']}-{item['id'][:8]}.{self.save_type}"
             )
             target_path = self.get_date_dir(acted_at.date()).joinpath(item_filename)
-            await item_locator.screenshot(path=target_path, type="png")
+            await item_locator.screenshot(path=target_path, type=self.save_type)
 
         return items, count, acted_at
 
@@ -178,9 +181,9 @@ class Monitor(BaseWorker):
                 self.logger.exception(e)
                 await page.screenshot(
                     path=self.results_dir.joinpath(
-                        f"error_{cur_acted_at.strftime('%Y%m%d%H%M%S')}.png"
+                        f"error_{cur_acted_at.strftime('%Y%m%d%H%M%S')}.{self.save_type}"
                     ),
-                    type="png",
+                    type=self.save_type,
                     full_page=True,
                 )
                 break
