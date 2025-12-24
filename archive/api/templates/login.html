@@ -1,318 +1,402 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>ZhiArchive 登录</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        :root {
-            --bg: #0c1220;
-            --panel: rgba(17, 24, 39, 0.82);
-            --card: rgba(23, 32, 49, 0.9);
-            --border: rgba(255, 255, 255, 0.08);
-            --accent: #2dd4bf;
-            --accent-strong: #14b8a6;
-            --text: #e8edf7;
-            --muted: #94a3b8;
-            --error: #f87171;
-        }
+      :root {
+        --bg: #0c1220;
+        --panel: rgba(17, 24, 39, 0.82);
+        --card: rgba(23, 32, 49, 0.9);
+        --border: rgba(255, 255, 255, 0.08);
+        --accent: #2dd4bf;
+        --accent-strong: #14b8a6;
+        --text: #e8edf7;
+        --muted: #94a3b8;
+        --error: #f87171;
+      }
 
-        * {
-            box-sizing: border-box;
-        }
+      * {
+        box-sizing: border-box;
+      }
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: "Manrope", "Segoe UI", sans-serif;
-            background: radial-gradient(circle at 20% 20%, rgba(45, 212, 191, 0.08), transparent 35%),
-            radial-gradient(circle at 80% 0%, rgba(125, 211, 252, 0.08), transparent 30%),
-            linear-gradient(135deg, #0b1220 0%, #0e172a 60%, #0c1220 100%);
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 32px 20px;
-        }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Manrope", "Segoe UI", sans-serif;
+        background: radial-gradient(
+            circle at 20% 20%,
+            rgba(45, 212, 191, 0.08),
+            transparent 35%
+          ),
+          radial-gradient(
+            circle at 80% 0%,
+            rgba(125, 211, 252, 0.08),
+            transparent 30%
+          ),
+          linear-gradient(135deg, #0b1220 0%, #0e172a 60%, #0c1220 100%);
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 20px;
+      }
 
+      .shell {
+        width: min(1080px, 100%);
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 28px;
+        align-items: stretch;
+      }
+
+      @media (max-width: 900px) {
         .shell {
-            width: min(1080px, 100%);
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            gap: 28px;
-            align-items: stretch;
+          grid-template-columns: 1fr;
         }
+      }
 
-        @media (max-width: 900px) {
-            .shell {
-                grid-template-columns: 1fr;
-            }
-        }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 20px 80px rgba(0, 0, 0, 0.35),
+          0 0 0 1px rgba(255, 255, 255, 0.03);
+      }
 
-        .panel {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 32px;
-            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03);
-        }
+      .panel h1 {
+        margin: 0 0 10px;
+        font-size: 30px;
+        letter-spacing: 0.5px;
+      }
 
-        .panel h1 {
-            margin: 0 0 10px;
-            font-size: 30px;
-            letter-spacing: 0.5px;
-        }
+      .panel p {
+        margin: 0 0 20px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
 
-        .panel p {
-            margin: 0 0 20px;
-            color: var(--muted);
-            line-height: 1.6;
-        }
+      .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
 
-        .badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 16px;
-        }
+      .badge {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 8px 12px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.02);
+        font-size: 13px;
+        letter-spacing: 0.2px;
+      }
 
-        .badge {
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 8px 12px;
-            color: var(--muted);
-            background: rgba(255, 255, 255, 0.02);
-            font-size: 13px;
-            letter-spacing: 0.2px;
-        }
+      .form-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.32),
+          0 0 0 1px rgba(255, 255, 255, 0.02);
+      }
 
-        .form-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 28px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.02);
-        }
+      .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-        .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+      .form-header h2 {
+        margin: 0;
+        font-size: 22px;
+      }
 
-        .form-header h2 {
-            margin: 0;
-            font-size: 22px;
-        }
+      .hint {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
 
-        .hint {
-            margin: 4px 0 0;
-            color: var(--muted);
-            font-size: 13px;
-        }
+      label {
+        font-size: 14px;
+        color: var(--muted);
+        display: block;
+        margin-bottom: 6px;
+      }
 
-        label {
-            font-size: 14px;
-            color: var(--muted);
-            display: block;
-            margin-bottom: 6px;
-        }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        font-size: 15px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease,
+          background 0.2s ease;
+      }
 
-        input[type=text],
-        input[type=password] {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.04);
-            color: var(--text);
-            font-size: 15px;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-        }
+      input[type="text"]:focus,
+      input[type="password"]:focus {
+        outline: none;
+        border-color: rgba(45, 212, 191, 0.6);
+        box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.08);
+        background: rgba(255, 255, 255, 0.06);
+      }
 
-        input[type=text]:focus,
-        input[type=password]:focus {
-            outline: none;
-            border-color: rgba(45, 212, 191, 0.6);
-            box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.08);
-            background: rgba(255, 255, 255, 0.06);
-        }
+      .actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 4px;
+      }
 
-        .actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            margin-top: 4px;
-        }
+      .btn,
+      button[type="submit"] {
+        display: inline-block;
+        text-decoration: none;
+        text-align: center;
+        background: linear-gradient(
+          135deg,
+          var(--accent) 0%,
+          var(--accent-strong) 100%
+        );
+        border: none;
+        color: #051016;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.2px;
+        box-shadow: 0 10px 30px rgba(45, 212, 191, 0.25);
+        transition: transform 0.15s ease, box-shadow 0.15s ease,
+          filter 0.15s ease;
+      }
 
-        button[type=submit] {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
-            border: none;
-            color: #051016;
-            padding: 12px 18px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            letter-spacing: 0.2px;
-            box-shadow: 0 10px 30px rgba(45, 212, 191, 0.25);
-            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-        }
+      .btn:hover,
+      button[type="submit"]:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 36px rgba(45, 212, 191, 0.32);
+      }
 
-        button[type=submit]:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 14px 36px rgba(45, 212, 191, 0.32);
-        }
+      .btn:active,
+      button[type="submit"]:active {
+        transform: translateY(0);
+        filter: brightness(0.96);
+      }
 
-        button[type=submit]:active {
-            transform: translateY(0);
-            filter: brightness(0.96);
-        }
+      .btn[disabled],
+      button[type="submit"][disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
 
-        button[type=submit][disabled] {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+      .alert {
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 14px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+      }
 
-        .alert {
-            border-radius: 12px;
-            padding: 12px 14px;
-            font-size: 14px;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text);
-        }
+      .alert.error {
+        border-color: rgba(248, 113, 113, 0.4);
+        background: rgba(248, 113, 113, 0.08);
+        color: #fecdd3;
+      }
 
-        .alert.error {
-            border-color: rgba(248, 113, 113, 0.4);
-            background: rgba(248, 113, 113, 0.08);
-            color: #fecdd3;
-        }
+      .alert.info {
+        border-color: rgba(125, 211, 252, 0.35);
+        background: rgba(125, 211, 252, 0.08);
+        color: #dbeafe;
+      }
 
-        .alert.info {
-            border-color: rgba(125, 211, 252, 0.35);
-            background: rgba(125, 211, 252, 0.08);
-            color: #dbeafe;
-        }
+      .toast {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-        .toast {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .toast-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 0 6px rgba(45, 212, 191, 0.2);
-        }
+      .toast-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 6px rgba(45, 212, 191, 0.2);
+      }
     </style>
-</head>
-<body>
-<div class="shell">
-    <div class="panel">
+  </head>
+  <body>
+    <div class="shell">
+      <div class="panel">
         <h1>ZhiArchive 控制台</h1>
-        <p>登录后可管理采集进度、监控配置与运行状态。凭证会直接发送至 API，不会在浏览器中持久保存。</p>
+        <p>
+          登录后可管理采集进度、监控配置与运行状态。凭证会直接发送至
+          API，不会在浏览器中持久保存。
+        </p>
         <div class="badges">
-            <span class="badge">安全登录</span>
-            <span class="badge">快速访问</span>
-            <span class="badge">内网可用</span>
+          <span class="badge">安全登录</span>
+          <span class="badge">快速访问</span>
+          <span class="badge">内网可用</span>
         </div>
         {% if toast %}
-            <div class="alert info" style="margin-top: 20px;">
-                <div class="toast">
-                    <span class="toast-dot"></span>
-                    <span>{{ toast }}</span>
-                </div>
-            </div>
-        {% endif %}
-    </div>
-    <div class="form-card">
-        <div class="form-header">
-            <h2>登录账户</h2>
-            <span class="hint">使用 API 提供的管理员凭证</span>
+        <div class="alert info" style="margin-top: 20px">
+          <div class="toast">
+            <span class="toast-dot"></span>
+            <span>{{ toast }}</span>
+          </div>
         </div>
-        <div id="feedback" class="alert error" style="display: none;"></div>
+        {% endif %}
+      </div>
+      <div class="form-card" id="login-card">
+        <div class="form-header">
+          <h2>登录账户</h2>
+          <span class="hint">使用 API 提供的管理员凭证</span>
+        </div>
+        <div id="feedback" class="alert error" style="display: none"></div>
         <form id="login-form" novalidate>
-            <div>
-                <label for="username">用户名</label>
-                <input type="text" id="username" name="username" autocomplete="username" required>
-            </div>
-            <div>
-                <label for="password">密码</label>
-                <input type="password" id="password" name="password" autocomplete="current-password" required>
-            </div>
-            <div class="actions">
-                <button type="submit" id="submit-btn">登录</button>
-                <span class="hint">登录后自动跳回来源页</span>
-            </div>
+          <div>
+            <label for="username">用户名</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              autocomplete="username"
+              required
+            />
+          </div>
+          <div>
+            <label for="password">密码</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <div class="actions">
+            <button type="submit" id="submit-btn">登录</button>
+            <span class="hint">登录后自动跳回来源页</span>
+          </div>
         </form>
+      </div>
+
+      <div class="form-card" id="logged-in-card" style="display: none">
+        <div class="form-header">
+          <h2>已登录</h2>
+          <span class="hint">当前状态</span>
+        </div>
+        <div class="alert info">
+          <div class="toast">
+            <span class="toast-dot"></span>
+            <span>您已登录为: <strong id="current-user"></strong></span>
+          </div>
+        </div>
+        <div class="actions">
+          <a href="/zhi/core/config" class="btn">去配置页</a>
+          <button
+            type="button"
+            id="logout-btn"
+            onclick="logout()"
+            class="btn"
+            style="background: rgba(255, 255, 255, 0.1); box-shadow: none"
+          >
+            注销
+          </button>
+        </div>
+      </div>
     </div>
-</div>
 
-<script>
-  const form = document.getElementById('login-form');
-  const feedback = document.getElementById('feedback');
-  const submitBtn = document.getElementById('submit-btn');
-  const defaultRedirect = {{ redirect_url | default('/zhi/core/config') | tojson }};
-  const loginUrl = {{ login_url | tojson }};
-  const urlParams = new URLSearchParams(window.location.search);
-  const redirectUrl = urlParams.get('redirect') || defaultRedirect;
+    <script>
+      const form = document.getElementById('login-form');
+      const feedback = document.getElementById('feedback');
+      const submitBtn = document.getElementById('submit-btn');
+      const defaultRedirect = {{ redirect_url | default('/zhi/core/config') | tojson }};
+      const loginUrl = {{ login_url | tojson }};
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectUrl = urlParams.get('redirect') || defaultRedirect;
 
-  function showMessage(message) {
-    feedback.textContent = message;
-    feedback.style.display = 'block';
-  }
+      function showMessage(message) {
+        feedback.textContent = message;
+        feedback.style.display = 'block';
+      }
 
-  async function submitForm(event) {
-    event.preventDefault();
-    feedback.style.display = 'none';
-    submitBtn.disabled = true;
-    submitBtn.textContent = '登录中...';
+      async function submitForm(event) {
+        event.preventDefault();
+        feedback.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.textContent = '登录中...';
 
-    const data = {
-      username: document.getElementById('username').value.trim(),
-      password: document.getElementById('password').value
-    };
+        const data = {
+          username: document.getElementById('username').value.trim(),
+          password: document.getElementById('password').value
+        };
 
-    try {
-      const response = await fetch(loginUrl, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {'Content-Type': 'application/json'}
+        try {
+          const response = await fetch(loginUrl, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {'Content-Type': 'application/json'}
+          });
+
+          if (response.status <= 299) {
+            window.location = redirectUrl;
+            return;
+          }
+
+          if (response.status === 401) {
+            const text = await response.text();
+            showMessage(text || '用户名或密码错误');
+            return;
+          }
+
+          showMessage('用户名或密码错误');
+        } catch (error) {
+          showMessage('登录失败，请重试。');
+          console.error(error);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '登录';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        form.addEventListener('submit', submitForm);
+        checkLogin();
       });
 
-      if (response.status <= 299) {
-        window.location = redirectUrl;
-        return;
+      async function checkLogin() {
+        try {
+            const res = await fetch('/auth/me');
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('login-card').style.display = 'none';
+                document.getElementById('logged-in-card').style.display = 'flex';
+                document.getElementById('current-user').textContent = data.username;
+            }
+        } catch (e) {
+            console.error('Login check failed:', e);
+        }
       }
 
-      if (response.status === 401) {
-        const text = await response.text();
-        showMessage(text || '用户名或密码错误');
-        return;
+      function logout() {
+          // Clear token cookie
+          document.cookie = 'token=; Max-Age=0; path=/;';
+          window.location.reload();
       }
-
-      showMessage('用户名或密码错误');
-    } catch (error) {
-      showMessage('登录失败，请重试。');
-      console.error(error);
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = '登录';
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    form.addEventListener('submit', submitForm);
-  });
-</script>
-</body>
+    </script>
+  </body>
 </html>
